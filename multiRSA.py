@@ -5,6 +5,7 @@ import random
 import string
 from multiprocessing import cpu_count
 import threading
+import math
 
 
 class rsaGenerator:
@@ -75,7 +76,7 @@ class threadRSAcrypto:
         data += (b'\x00' * pad)
 
         numBlocks = len(data) // blockLength
-        blocksPerThread = numBlocks // self.numThreads
+        blocksPerThread = math.ceil(numBlocks / self.numThreads)
         bytesPerThread = blockLength * blocksPerThread
         offset = 0
         encDict = cypherData()
@@ -113,7 +114,7 @@ class threadRSAcrypto:
 
         blockLength = (keySize // 8) - self.hashLen
         numBlocks = len(data) // (blockLength + self.hashLen)
-        blocksPerThread = numBlocks // self.numThreads
+        blocksPerThread = math.ceil(numBlocks / self.numThreads)
         bytesPerThread = (blockLength + self.hashLen) * blocksPerThread
 
         offset = 0
@@ -216,14 +217,14 @@ def decryptRSAsingle(data, key, keySize=3072):
 if __name__ == "__main__":
     # data = "This is a test string that will be repeated a few times\n" * 3000000
     keySize = 3072
-    tobj = threadRSAcrypto()
     # keySize must be  1024, 2048 or 3072
+    tobj = threadRSAcrypto()
     start = time.time()
     privKey, pubKey = rsaGenerator(keySize).generate()
     print("Generating the key took {:.2f} seconds".format((time.time() - start)))
 
     start = time.time()
-    data = ''.join(random.choice(string.ascii_letters) for j in range(1024)) * 100
+    data = ''.join(random.choice(string.ascii_letters) for j in range(1024)) * 1
     data = bytes(data, 'utf-8')
 
     print("It took {:.2f} milliseconds to generate the data".format((time.time() - start) * 1000))
